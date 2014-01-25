@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import sys, subprocess, string, commands, argparse
+import sys, subprocess, string, commands, argparse, os
 import BrowterConfig
 
 def parseArgs():
@@ -14,9 +14,9 @@ def parseArgs():
 		# True for expanding the tilde into a fully qualified path
 		appdata = path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'default.sqlite')
 	elif sys.platform == 'win32':
-		appdata = path.join(environ['APPDATA'], APPNAME, 'default.sqlite')
+		appdata = os.path.join(environ['APPDATA'], APPNAME, 'default.sqlite')
 	else:
-		appdata = path.expanduser(path.join("~", "." + APPNAME, 'default.sqlite'))
+		appdata = os.path.expanduser(os.path.join("~", "." + APPNAME, 'default.sqlite'))
 
 	parser = argparse.ArgumentParser(description='url-intercept lets you pick which browser to use on a page-by-page basis')
 	parser.add_argument('urls', metavar='url', nargs=argparse.REMAINDER, help='the url(s) to open')
@@ -28,7 +28,7 @@ def main():
 
 	args = parseArgs();
 
-	url = args.url
+	url = args.urls
 
 	config = BrowterConfig(args.config_file);
 
