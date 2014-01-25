@@ -1,47 +1,65 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import sys, subprocess, string, commands
+import sys, subprocess, string, commands, argparse
+import BrowterConfig
 
-default = "default";
+def parseArgs():
+	APPNAME = sys.argv[0]
+	if sys.platform == 'darwin':
+		from AppKit import NSSearchPathForDirectoriesInDomains
+		# http://developer.apple.com/DOCUMENTATION/Cocoa/Reference/Foundation/Miscellaneous/Foundation_Functions/Reference/reference.html#//apple_ref/c/func/NSSearchPathForDirectoriesInDomains
+		# NSApplicationSupportDirectory = 14
+		# NSUserDomainMask = 1
+		# True for expanding the tilde into a fully qualified path
+		appdata = path.join(NSSearchPathForDirectoriesInDomains(14, 1, True)[0], APPNAME, 'default.sqlite')
+	elif sys.platform == 'win32':
+		appdata = path.join(environ['APPDATA'], APPNAME, 'default.sqlite')
+	else:
+		appdata = path.expanduser(path.join("~", "." + APPNAME, 'default.sqlite'))
 
-profiles = {
-	"joh6nn":		("reddit.com","news.ycombinator.com","slashdot.org","stackoverflow.com"),
-	"facebook":		("facebook.com"),
-	"jwigg":        ("paypal.com", "ebay.com", "amazon.com"),
-	"jobhunt":		("linkedin.com","monster.com","careerbuilder.com","jobvite.com","dice.com"),
-	"finance":		("coinbase.com", "meridenschoolsfcu.com"),
-	"ninja":        ("duckduckgo.com")
-	};
+	parser = argparse.ArgumentParser(description='url-intercept lets you pick which browser to use on a page-by-page basis')
+	parser.add_argument('urls', metavar='url', nargs=argparse.REMAINDER, help='the url(s) to open')
+	parser.add_argument('--config', metavar='path/to/file.sqlite', dest='config_file', action='store', default=appdata, help='the config file to use')
 
-url = sys.argv[1];
+	return parser.parse_args()
 
-domain = url.lstrip('htps:/');
-domain = domain.split("/")[0];
-print domain;
+def main():
 
-if domain.startswith("www."):
-	domain = domain.lstrip('w.');
+	args = parseArgs();
+
+	url = args.url
+
+	config = BrowterConfig(args.config_file);
+
+	domain = url.lstrip('htps:/');
+	domain = domain.split("/")[0];
 	print domain;
 
-profile = default;
+	if domain.startswith("www."):
+		domain = domain.lstrip('w.');
+		print domain;
 
-for p in profiles:
-	print p;
-	if domain in profiles[p]:
-		print "found it";
-		profile = p;
-		break;
+	profile = config.default;
 
-cmd_ping_profile = "firefox -P %s -remote \"ping()\" &" % profile;
+	for p in profiles:
+		print p;
+		if domain in profiles[p]:
+			print "found it";
+			profile = p;
+			break;
 
-print cmd_ping_profile;
-profile_running = subprocess.call(cmd_ping_profile, shell=True)
-if profile_running:
-	cmd_open_url = "firefox -P %s -remote \"openurl(%s,new-tab)\" &" % (profile, url);
-else:
-	cmd_open_url = "firefox -P %s --new-instance --new-tab %s &" % (profile, url);
+	cmd_ping_profile = "firefox -P %s -remote \"ping()\" &" % profile;
 
-print cmd_open_url;
-subprocess.call(cmd_open_url, shell=True)
-sys.exit(0);
+	print cmd_ping_profile;
+	profile_running = subprocess.call(cmd_ping_profile, shell=True)
+	if profile_running:
+		cmd_open_url = "firefox -P %s -remote \"openurl(%s,new-tab)\" &" % (profile, url);
+	else:
+		cmd_open_url = "firefox -P %s --new-instance --new-tab %s &" % (profile, url);
+
+	print cmd_open_url;
+	subprocess.call(cmd_open_url, shell=True)
+	sys.exit(0);
+
+main();
