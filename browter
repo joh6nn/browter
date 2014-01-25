@@ -1,0 +1,47 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+import sys, subprocess, string, commands
+
+default = "default";
+
+profiles = {
+	"joh6nn":		("reddit.com","news.ycombinator.com","slashdot.org","stackoverflow.com"),
+	"facebook":		("facebook.com"),
+	"jwigg":        ("paypal.com", "ebay.com", "amazon.com"),
+	"jobhunt":		("linkedin.com","monster.com","careerbuilder.com","jobvite.com","dice.com"),
+	"finance":		("coinbase.com", "meridenschoolsfcu.com"),
+	"ninja":        ("duckduckgo.com")
+	};
+
+url = sys.argv[1];
+
+domain = url.lstrip('htps:/');
+domain = domain.split("/")[0];
+print domain;
+
+if domain.startswith("www."):
+	domain = domain.lstrip('w.');
+	print domain;
+
+profile = default;
+
+for p in profiles:
+	print p;
+	if domain in profiles[p]:
+		print "found it";
+		profile = p;
+		break;
+
+cmd_ping_profile = "firefox -P %s -remote \"ping()\" &" % profile;
+
+print cmd_ping_profile;
+profile_running = subprocess.call(cmd_ping_profile, shell=True)
+if profile_running:
+	cmd_open_url = "firefox -P %s -remote \"openurl(%s,new-tab)\" &" % (profile, url);
+else:
+	cmd_open_url = "firefox -P %s --new-instance --new-tab %s &" % (profile, url);
+
+print cmd_open_url;
+subprocess.call(cmd_open_url, shell=True)
+sys.exit(0);
