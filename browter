@@ -18,7 +18,7 @@ def parseArgs():
 	else:
 		appdata = os.path.expanduser(os.path.join("~", "." + APPNAME, 'default.sqlite'))
 
-	parser = argparse.ArgumentParser(description='url-intercept lets you pick which browser to use on a page-by-page basis')
+	parser = argparse.ArgumentParser(description='browter routes urls to browsers based on your rules')
 	parser.add_argument('urls', metavar='url', nargs=argparse.REMAINDER, help='the url(s) to open')
 	parser.add_argument('--config', metavar='path/to/file.sqlite', dest='config_file', action='store', default=appdata, help='the config file to use')
 
@@ -44,10 +44,8 @@ def main():
 	profiles = config.browsers
 
 	for p in profiles:
-		print p;
 		if domain in config.browsers[p]:
 			print "found it";
-			profile = p;
 			break;
 
 	cmd_ping_profile = "firefox -P %s -remote \"ping()\" &" % profile;

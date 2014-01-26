@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-import ConfigParser, os.path
+import ConfigParser, os.path, sqlite3
 
 class Config:
     description = "manage configuration for browter"
@@ -12,13 +12,22 @@ class Config:
     	self.config = ConfigParser.RawConfigParser(allow_no_value=True)
         self.config.read(self.path)
 
-        self.settings = {};
+        self.settings = {}
         self.browsers = {}
         for opt in self.config.options('settings'):
             self.settings[opt] = self.config.get('settings', opt)
 
         for opt in self.config.options('browsers'):
             self.browsers[opt] = self.config.options(opt)
+
+        connection = sqlite3.connect('browter.sqlite');
+        self.db    = connection.cursor();
+
+        self.db.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+        if 0 == len(self.db.fetchall()):
+            self.db.execute('''CREATE TABLE browsers (name text, command text)''')
+            self.db.execute('''CREATE TABLE patterns (pattern text, browser_name text)''')
+            self.db.execute('''CREATE TABLE settings (name text, type text, number real, price real)''')
 
     def exists(self):
     	return os.path.isfile(self.path)
