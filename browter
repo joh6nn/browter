@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import sys, subprocess, string, commands, argparse, os
-import BrowterConfig
+from Browter import BrowterConfig
 
 def parseArgs():
 	APPNAME = sys.argv[0]
@@ -28,9 +28,9 @@ def main():
 
 	args = parseArgs();
 
-	url = args.urls
+	url = args.urls[0]
 
-	config = BrowterConfig(args.config_file);
+	config = BrowterConfig.Config(args.config_file);
 
 	domain = url.lstrip('htps:/');
 	domain = domain.split("/")[0];
@@ -40,11 +40,12 @@ def main():
 		domain = domain.lstrip('w.');
 		print domain;
 
-	profile = config.default;
+	profile  = config.settings['default_browser'];
+	profiles = config.browsers
 
 	for p in profiles:
 		print p;
-		if domain in profiles[p]:
+		if domain in config.browsers[p]:
 			print "found it";
 			profile = p;
 			break;

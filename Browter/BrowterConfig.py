@@ -10,12 +10,18 @@ class Config:
     		path = "browter.ini"
     	self.path = path
     	self.config = ConfigParser.RawConfigParser(allow_no_value=True)
+        self.config.read(self.path)
+
+        self.settings = {};
+        self.browsers = {}
+        for opt in self.config.options('settings'):
+            self.settings[opt] = self.config.get('settings', opt)
+
+        for opt in self.config.options('browsers'):
+            self.browsers[opt] = self.config.options(opt)
 
     def exists(self):
     	return os.path.isfile(self.path)
-
-    def read(self):
-    	self.config.read(self.path)
 
     def save(self):
     	with open(self.path, 'wb') as cfgfile:
